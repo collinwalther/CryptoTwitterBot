@@ -1,3 +1,4 @@
+from textblob import TextBlob
 import tweepy
 import time
 import markovify
@@ -16,22 +17,62 @@ class FakeCryptoNews:
         self.api = tweepy.API(auth)
 
         # Set up markov model of source text
-        with open("SourceText.txt") as f:
+        with open("SourceText.txt", 'r') as f:
             text = f.read()
         self.model = markovify.Text(text, state_size=3)
+
+        # Maintain a list of sentences that we've already generated, so we
+        # never accidentally repeat ourself.
+        self.sentences = set()
         
-    def GetTweet(self):
-        return self.model.make_short_sentence(140)
+    def GetHappyTweet(self):
+        threshold = .3
+        sentence = ""
+        while True:
+            sentence = self.model.make_short_sentence(140)
+            if sentence.strip() in self.sentences:
+                continue
+            t = TextBlob(sentence)
+            if t.sentiment.polarity >= threshold:
+                self.sentences.add(sentence.strip())
+                break
+        return sentence
+
+    def GetSadTweet(self):
+        threshold = -.3
+        sentence = ""
+        while True:
+            sentence = self.model.make_short_sentence(140)
+            if sentence.strip() in self.sentences:
+                continue
+            t = TextBlob(sentence)
+            if t.sentiment.polarity <= threshold:
+                self.sentences.add(sentence.strip())
+                break
+        return sentence
     
     def Tweet(self, message):
         self.api.update_status(message)
     
     def Run(self):
+        happy = True
         while (1):
-            self.Tweet(self.GetTweet())
+            if happy:
+                self.Tweet(self.GetHappyTweet())
+            else:
+                self.Tweet(self.GetSadTweet())
             time.sleep(900)
     
 if __name__ == "__main__":
     fcn = FakeCryptoNews()
-    fcn.Run()
+    #fcn.Run()
+    print("Happy:")
+    for _ in range(20):
+        print(fcn.GetHappyTweet())
+
+    print("\nSad:")
+    for _ in range(20):
+        print(fcn.GetSadTweet())
+
+
 

@@ -1,15 +1,38 @@
+from textblob import TextBlob
 import urllib.request
+import os.path
+import datetime
 import json
 
-if __name__ == "__main__":
-    t = "all"
-    limit = 10
-    subreddit = "cryptocurrency"
-    after = ""
+posts = [] 
+prices = []
 
-    # Delete the old copy of the text we've gotten
-    with open('SourceText.txt', 'w') as dst:
-        pass
+def GetAllSubredditPosts(destFile):
+    # Get the data and write it to a file, so we don't have to 
+    # hit the API endpoint too much
+    global posts
+    with open(destFile, 'w') as dst:
+        for post in posts:
+            selfText = post['selftext']
+            title = post['title']
+            dst.write("{}\n".format(title))
+            dst.write("{}\n".format(selfText))
+
+
+def MakeSubredditAPIRequest(subreddit):
+    # Don't do anything if we already have the files, so we can avoid
+    # getting rate limited by reddit (perish the thought)
+    global posts
+    cachedFileName = "r-" + subreddit + ".txt"
+    if os.path.isfile(cachedFileName):
+        with open(cachedFileName, 'r') as src:
+            jsonData = json.loads(src.read())
+            posts = jsonData
+            return
+
+    t = "all"
+    limit = 100
+    after = ""
 
     # Start getting the content via the reddit API
     while after is not None:
@@ -25,18 +48,48 @@ if __name__ == "__main__":
 
         # Parse the JSON from the response
         jsonData = json.loads(source)
-        
-        # Get the data and write it to a file, so we don't have to 
-        # hit the API endpoint too much
+        posts += [child['data'] for child in jsonData['data']['children']]
+
+        # Set the "after" variable so we can iterate over the next 
+        # few posts
         after = jsonData['data']['after']
         print(after)
-        with open('SourceText.txt', 'a') as dst:
-            for i in range(limit):
-                if i >= len(post):
-                    return
-                post = jsonData['data']['children'][i]
-                selfText = post['data']['selftext']
-                title = post['data']['title']
-                dst.write("{}\n".format(title))
-                dst.write("{}\n".format(selfText))
 
+    # Save the data we just got to a file, so we don't always have to retrieve it 
+    # from reddit.
+    with open(cachedFileName, 'w') as dst:
+        json.dump(posts, dst)
+
+def MakePricesAPIRequest(ticker):
+    # Don't do anything if we already have the files, so we can avoid
+    # getting rate limited by cryptocompare
+    global prices 
+    cachedFileName = "prices.txt"
+    if os.path.isfile(cachedFileName):
+        with open(cachedFileName, 'r') as src:
+            jsonData = json.loads(src.read())
+            prices = jsonData
+            return
+
+    numDays = 365
+
+    # Generate the API endpoint
+    url = "https://min-api.cryptocompare.com/data/histoday" \
+        + "?fsym={}&tsym=USD&limit={}&aggregate=1&e=CCCAGG".format(ticker, numDays)
+    pageRequest = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
+    source = urllib.request.urlopen(pageRequest).read().decode('utf-8')
+
+    # Parse the JSON from the response
+    jsonData = json.loads(source)
+    prices = jsonData['Data']
+
+    # Save the data we just got to a file, so we don't always have to retrieve it
+    # from reddit.
+    with open(cachedFileName, 'w') as dst:
+        json.dump(prices, dst)
+
+
+if __name__ == "__main__":
+    MakeSubredditAPIRequest("cryptocurrency")
+    MakePricesAPIRequest("BTC")
+    GetAllSubredditPosts("SourceText.txt")
