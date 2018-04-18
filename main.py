@@ -1,4 +1,5 @@
 from textblob import TextBlob
+import random
 import tweepy
 import time
 import markovify
@@ -50,20 +51,45 @@ class FakeCryptoNews:
                 self.sentences.add(sentence.strip())
                 break
         return "😢 " + sentence
+
+    def GetRegularTweet(self):
+        positiveThreshold = .4
+        negativeThreshold = -.4
+        sentence = ""
+        while True:
+            sentence = self.model.make_short_sentence(140)
+            if sentence.strip() in self.sentences:
+                continue
+            t = TextBlob(sentence)
+            if negativeThreshold < t.sentiment.polarity and positiveThreshold > t.sentiment.polarity:
+                self.sentences.add(sentence.strip())
+                break
+        return sentence 
     
     def Tweet(self, message):
         self.api.update_status(message)
     
     def Run(self):
-        happy = True
         while (1):
-            if happy:
+            doEmotionalTweet = random.randint(1, 5)
+            if doEmotionalTweet == 1:
                 self.Tweet(self.GetHappyTweet())
-            else:
+            elif doEmotionalTweet == 2:
                 self.Tweet(self.GetSadTweet())
+            else:
+                self.Tweet(self.GetRegularTweet())
             time.sleep(900)
     
 if __name__ == "__main__":
     fcn = FakeCryptoNews()
-    fcn.Run()
+    #fcn.Run()
+    print("\nRegular")
+    for i in range(10):
+        print(fcn.GetRegularTweet())
+    print("\nHappy")
+    for i in range(10):
+        print(fcn.GetHappyTweet())
+    print("\nSad")
+    for i in range(10):
+        print(fcn.GetSadTweet())
 
