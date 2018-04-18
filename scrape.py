@@ -60,36 +60,6 @@ def MakeSubredditAPIRequest(subreddit):
     with open(cachedFileName, 'w') as dst:
         json.dump(posts, dst)
 
-def MakePricesAPIRequest(ticker):
-    # Don't do anything if we already have the files, so we can avoid
-    # getting rate limited by cryptocompare
-    global prices 
-    cachedFileName = "prices.txt"
-    if os.path.isfile(cachedFileName):
-        with open(cachedFileName, 'r') as src:
-            jsonData = json.loads(src.read())
-            prices = jsonData
-            return
-
-    numDays = 365
-
-    # Generate the API endpoint
-    url = "https://min-api.cryptocompare.com/data/histoday" \
-        + "?fsym={}&tsym=USD&limit={}&aggregate=1&e=CCCAGG".format(ticker, numDays)
-    pageRequest = urllib.request.Request(url, headers={'User-Agent': 'Mozilla'})
-    source = urllib.request.urlopen(pageRequest).read().decode('utf-8')
-
-    # Parse the JSON from the response
-    jsonData = json.loads(source)
-    prices = jsonData['Data']
-
-    # Save the data we just got to a file, so we don't always have to retrieve it
-    # from reddit.
-    with open(cachedFileName, 'w') as dst:
-        json.dump(prices, dst)
-
-
 if __name__ == "__main__":
     MakeSubredditAPIRequest("cryptocurrency")
-    MakePricesAPIRequest("BTC")
     GetAllSubredditPosts("SourceText.txt")
