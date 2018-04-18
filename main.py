@@ -29,27 +29,27 @@ class FakeCryptoNews:
         threshold = .3
         sentence = ""
         while True:
-            sentence = self.model.make_short_sentence(140)
+            sentence = self.model.make_short_sentence(138)
             if sentence.strip() in self.sentences:
                 continue
             t = TextBlob(sentence)
             if t.sentiment.polarity >= threshold:
                 self.sentences.add(sentence.strip())
                 break
-        return sentence
+        return "😄 " + sentence
 
     def GetSadTweet(self):
         threshold = -.3
         sentence = ""
         while True:
-            sentence = self.model.make_short_sentence(140)
+            sentence = self.model.make_short_sentence(138)
             if sentence.strip() in self.sentences:
                 continue
             t = TextBlob(sentence)
             if t.sentiment.polarity <= threshold:
                 self.sentences.add(sentence.strip())
                 break
-        return sentence
+        return "😢 " + sentence
     
     def Tweet(self, message):
         self.api.update_status(message)
@@ -65,14 +65,5 @@ class FakeCryptoNews:
     
 if __name__ == "__main__":
     fcn = FakeCryptoNews()
-    #fcn.Run()
-    print("Happy:")
-    for _ in range(20):
-        print(fcn.GetHappyTweet())
-
-    print("\nSad:")
-    for _ in range(20):
-        print(fcn.GetSadTweet())
-
-
+    fcn.Run()
 
