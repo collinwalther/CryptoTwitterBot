@@ -71,25 +71,9 @@ class FakeCryptoNews:
     
     def Run(self):
         while (1):
-            doEmotionalTweet = random.randint(1, 5)
-            if doEmotionalTweet == 1:
-                self.Tweet(self.GetHappyTweet())
-            elif doEmotionalTweet == 2:
-                self.Tweet(self.GetSadTweet())
-            else:
-                self.Tweet(self.GetRegularTweet())
+            self.Tweet(self.GetRegularTweet())
             time.sleep(900)
     
 if __name__ == "__main__":
     fcn = FakeCryptoNews()
-    #fcn.Run()
-    print("\nRegular")
-    for i in range(10):
-        print(fcn.GetRegularTweet())
-    print("\nHappy")
-    for i in range(10):
-        print(fcn.GetHappyTweet())
-    print("\nSad")
-    for i in range(10):
-        print(fcn.GetSadTweet())
-
+    fcn.Run()
