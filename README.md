@@ -4,3 +4,4 @@ RealTalkCrypto has been trained on 130K words taken from /r/cryptocurrency, and 
 Additionally, RealTalkCrypto is very emotional - sometimes he tweets about things he likes, and sometimes he tweets about things he dislikes.
 This is accomplished by doing sentiment analysis on his tweets before he posts them.
 Most of the time, however, he'll just tweet something ordinary.
+Follow him at twitter.com/RealTalkCrypto
