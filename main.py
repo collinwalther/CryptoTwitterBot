@@ -82,7 +82,7 @@ class FakeCryptoNews:
     
 if __name__ == "__main__":
     fcn = FakeCryptoNews()
-    #fcn.Run()
+    fcn.Run()
     print("\nRegular")
     for i in range(10):
         print(fcn.GetRegularTweet())
